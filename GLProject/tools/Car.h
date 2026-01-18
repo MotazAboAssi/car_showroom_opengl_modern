@@ -36,7 +36,6 @@ public:
     // --- WHEELS ---
     std::vector<Cylinder*> wheels;
     Cylinder* spareWheel;
-    Cube* spareWheelCover;
 
     // Constructor & Destructor
     Car(glm::vec3 startPos, std::vector<GLuint> textures);

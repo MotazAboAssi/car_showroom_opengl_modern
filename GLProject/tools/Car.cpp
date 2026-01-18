@@ -6,7 +6,6 @@ Car::Car(glm::vec3 startPos, std::vector<GLuint> textures)
     this->rotationAngle = 0.0f;
     this->wheelAngle = 0.0f;
 
-    // Textures: [0]=Body, [1]=Black/Tire, [2]=Glass, [3]=Grille/Metal
     GLuint bodyTex = textures[1];
     GLuint blackTex = textures[0];
     GLuint glassTex = textures[2];
@@ -34,7 +33,7 @@ Car::Car(glm::vec3 startPos, std::vector<GLuint> textures)
     wallBack->setTexture(bodyTex);
 
     // Windshield (Glass)
-    windshield = new Cube(glm::vec3(0), 1.0f, glm::vec4(0.2, 0.3, 0.5, 0.6));
+    windshield = new Cube(glm::vec3(0), 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 0.2f));
     // windshield->transformation(glm :: rotate(windshield->getMatrixModel(), -30, glm::vec3(1, 0, 0)));
     windshield->setTexture(glassTex);
 
@@ -80,9 +79,10 @@ Car::Car(glm::vec3 startPos, std::vector<GLuint> textures)
 
     spareWheel = new Cylinder(glm::vec3(0), 1.0f, 1.0f, glm::vec4(1), 24);
     spareWheel->setTexture(blackTex);
+    spareWheel->faces[0].setTexture(coverWheel);
+    spareWheel->faces[1].setTexture(coverWheel);
 
-    spareWheelCover = new Cube(glm::vec3(0), 1.0f, glm::vec4(1));
-    spareWheelCover->setTexture(bodyTex);
+
 }
 
 Car::~Car()
@@ -102,7 +102,6 @@ Car::~Car()
     delete turnSignalLeft;
     delete turnSignalRight;
     delete spareWheel;
-    delete spareWheelCover;
     for (auto f : fenders)
         delete f;
     for (auto w : wheels)
@@ -126,7 +125,6 @@ void Car::draw(Shader &shader)
     glm::mat4 carModel = glm::mat4(1.0f);
     carModel = glm::translate(carModel, position);
     carModel = glm::rotate(carModel, glm::radians(rotationAngle), glm::vec3(0, 1, 0));
-
 
     // ===========================
     //       FRONT END
@@ -154,78 +152,84 @@ void Car::draw(Shader &shader)
     turnSignalRight->transformation(sigR);
     turnSignalRight->draw(shader);
 
-
     // 6. Windshield (Glass) - Nearly Vertical
-    glm::mat4 wsMat = glm::translate(carModel, glm::vec3(0.0f, 1.5f, -1.0f)); // Front of cabin
-    // wsMat = glm::rotate(wsMat, glm::radians(-10.0f), glm::vec3(1, 0, 0));     // 80 degree angle (G-class style)
+    glm::mat4 wsMat = glm::translate(carModel, glm::vec3(0.0f, 1.5f, -1.4f)); // Front of cabin
     wsMat = glm::translate(wsMat, glm::vec3(0.0f, 0.2f, 0.0f));
     wsMat = glm::scale(wsMat, glm::vec3(1.7f, 0.7f, 0.05f));
     windshield->transformation(wsMat);
     windshield->draw(shader);
 
-
     // ===========================
-    //       HOLLOW CABIN
+    //       HOLLOW CABIN (EXTENDED)
     // ===========================
-    // 1. Floor (Base of cabin)
-    glm::mat4 floorMat = glm::translate(carModel, glm::vec3(0.0f, 0.6f, 0.5f)); // 0.6 up from ground
-    floorMat = glm::scale(floorMat, glm::vec3(1.8f, 0.6f, 3.0f));               // Wide and Long
+    // 1. Floor
+    glm::mat4 floorMat = glm::translate(carModel, glm::vec3(0.0f, 0.6f, 0.5f));
+    // CHANGED: Z-scale increased from 3.0 to 4.0
+    floorMat = glm::scale(floorMat, glm::vec3(1.799f, 0.6f, 3.999f));
     floor->transformation(floorMat);
     floor->draw(shader);
 
-    // 2. Ceiling (Roof)
-    glm::mat4 roofMat = glm::translate(carModel, glm::vec3(0.0f, 2.1f, 0.5f));
-    roofMat = glm::scale(roofMat, glm::vec3(1.8f, 0.1f, 3.0f));
+    // 2. Ceiling
+    glm::mat4 roofMat = glm::translate(carModel, glm::vec3(0.0f, 2.05f, 0.5f));
+    // CHANGED: Z-scale increased from 3.0 to 4.0
+    roofMat = glm::scale(roofMat, glm::vec3(1.6f, 0.1f, 4.0f));
     ceiling->transformation(roofMat);
     ceiling->draw(shader);
 
-    // 3. Left Wall (Thin)
+    // 3. Left Wall
     glm::mat4 lwMat = glm::translate(carModel, glm::vec3(-0.85f, 1.35f, 0.5f));
-    lwMat = glm::scale(lwMat, glm::vec3(0.1f, 1.5f, 3.0f));
+    // CHANGED: Z-scale increased from 3.0 to 4.0
+    lwMat = glm::scale(lwMat, glm::vec3(0.1f, 1.5f, 4.0f));
     wallLeft->transformation(lwMat);
     wallLeft->draw(shader);
 
-    // 4. Right Wall (Thin)
+    // 4. Right Wallw
     glm::mat4 rwMat = glm::translate(carModel, glm::vec3(0.85f, 1.35f, 0.5f));
-    rwMat = glm::scale(rwMat, glm::vec3(0.1f, 1.5f, 3.0f));
+    // CHANGED: Z-scale increased from 3.0 to 4.0
+    rwMat = glm::scale(rwMat, glm::vec3(0.1f, 1.5f, 4.0f));
     wallRight->transformation(rwMat);
     wallRight->draw(shader);
 
     // 5. Back Wall (Rear Door)
-    glm::mat4 backMat = glm::translate(carModel, glm::vec3(0.0f, 1.35f, 1.95f)); // Back of car
-    backMat = glm::scale(backMat, glm::vec3(1.8f, 1.5f, 0.1f));
+    // CHANGED: Moved Z position back from 1.95f to 2.45f to close the longer cabin
+    glm::mat4 backMat = glm::translate(carModel, glm::vec3(0.0f, 1.35f, 2.45f));
+    backMat = glm::scale(backMat, glm::vec3(1.6f, 1.3f, 0.1f));
     wallBack->transformation(backMat);
     wallBack->draw(shader);
 
-
     // ===========================
-    //       DETAILS
+    //       DETAILS (UPDATED)
     // ===========================
-    // 10. Bumpers
+    // Bumpers
     glm::mat4 bFront = glm::translate(carModel, glm::vec3(0.0f, 0.45f, -2.6f));
     bFront = glm::scale(bFront, glm::vec3(1.8f, 0.3f, 0.15f));
     bumperFront->transformation(bFront);
     bumperFront->draw(shader);
 
-    glm::mat4 bRear = glm::translate(carModel, glm::vec3(0.0f, 0.45f, 2.05f));
+    // CHANGED: Moved rear bumper Z from 2.05f to 2.55f
+    glm::mat4 bRear = glm::translate(carModel, glm::vec3(0.0f, 0.45f, 2.55f));
     bRear = glm::scale(bRear, glm::vec3(1.8f, 0.3f, 0.15f));
     bumperRear->transformation(bRear);
     bumperRear->draw(shader);
 
-    // 11. Running Boards (Side Steps)
-    glm::mat4 stepL = glm::translate(carModel, glm::vec3(-1.0f, 0.35f, 0.5f));
+    // Running Boards (Side Steps)
+    // CHANGED: Increased Z-scale from 2.0f to 3.0f to match cabin
+    glm::mat4 stepL = glm::translate(carModel, glm::vec3(-1.0f, 0.35f, 0.0f));
     stepL = glm::scale(stepL, glm::vec3(0.2f, 0.05f, 2.0f));
     runningBoardLeft->transformation(stepL);
     runningBoardLeft->draw(shader);
 
-    glm::mat4 stepR = glm::translate(carModel, glm::vec3(1.0f, 0.35f, 0.5f));
+    glm::mat4 stepR = glm::translate(carModel, glm::vec3(1.0f, 0.35f, 0.0f));
     stepR = glm::scale(stepR, glm::vec3(0.2f, 0.05f, 2.0f));
     runningBoardRight->transformation(stepR);
     runningBoardRight->draw(shader);
 
-    // 12. Wheels & Arches
+    // ===========================
+    //       WHEELS (UPDATED)
+    // ===========================
     float wx[] = {-0.85f, 0.85f, -0.85f, 0.85f};
-    float wz[] = {-1.6f, -1.6f, 1.2f, 1.2f}; // Wheelbase position
+    // CHANGED: Rear wheels moved from 1.2f to 1.8f
+    float wz[] = {-1.6f, -1.6f, 1.8f, 1.8f};
 
     for (int i = 0; i < 4; i++)
     {
@@ -237,25 +241,27 @@ void Car::draw(Shader &shader)
         wheels[i]->transformation(wMat);
         wheels[i]->draw(shader);
 
-        // Arch (Flare) - sits above wheel, slightly wider than body
-        float flareOffset = (wx[i] < 0) ? -0.15f : 0.15f; // Stick out left or right
+        // Arch
+        float flareOffset = (wx[i] < 0) ? -0.05f : 0.05f;
         glm::mat4 aMat = glm::translate(carModel, glm::vec3(wx[i] + flareOffset, 0.9f, wz[i]));
-        aMat = glm::scale(aMat, glm::vec3(0.15f, 0.05f, 0.9f));
+        aMat = glm::scale(aMat, glm::vec3(0.5f, 0.05f, 0.9f));
         fenders[i]->transformation(aMat);
         fenders[i]->draw(shader);
     }
 
-    // 13. Spare Wheel (Rear)
-    glm::mat4 swMat = glm::translate(carModel, glm::vec3(0.0f, 1.3f, 2.1f));
-    swMat = glm::scale(swMat, glm::vec3(0.4f, 0.2f, 0.4f));
-    spareWheel->transformation(swMat);
-    spareWheel->draw(shader);
+    // ===========================
+    //       SPARE WHEEL (FIXED ORDER & MOVED BACK)
+    // ===========================
+    // Note: In OpenGL, +Z is usually "backwards" relative to the car's front.
+    // To put the cover ON TOP of the wheel, the cover needs a HIGHER Z value.
 
-    // Spare Cover (Square or Cylinder, usually circle but cube looks like a rugged case)
-    glm::mat4 scMat = glm::translate(carModel, glm::vec3(0.0f, 1.3f, 2.22f));
-    scMat = glm::scale(scMat, glm::vec3(0.7f, 0.7f, 0.05f));
-    spareWheelCover->transformation(scMat);
-    spareWheelCover->draw(shader);
+    // 2. Draw the Cover second (at Z = 2.75f) so it sits on top
+    // CHANGED: Moved Z from 2.22 to 2.75. Increased thickness from 0.05 to 0.15 for visibility.
+    glm::mat4 scMat = glm::translate(carModel, glm::vec3(0.0f, 1.3f, 2.6f));
+    scMat = glm::rotate(scMat, (float)M_PI / 2, glm::vec3(1, 0, 0));
+    scMat = glm::scale(scMat, glm::vec3(0.4f, 0.2f, 0.4f));
+    spareWheel->transformation(scMat);
+    spareWheel->draw(shader);
 
 
 }
