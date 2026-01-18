@@ -1,28 +1,27 @@
 #pragma once
-#ifndef CUBE_H
-#define CUBE_H
-
 #include <vector>
 #include <glm/glm.hpp>
-#include <learnopengl/shader_m.h>
-#include "Polygon.h"
+#include "Polygon.h" // Essential: Defines 'Polygon' and 'Vertex'
 
 class Cube {
 public:
-	Cube();
+    // A cube is just a collection of 6 Polygon faces
+    std::vector<Polygon> faces;
+    
+    glm::vec3 center;
+    glm::vec4 color;
+    glm::mat4 model;
+    float edge;
 
-	Cube(glm::vec3 center, float edge, glm::vec3 color);
+    // Constructor
+    Cube(glm::vec3 center, float edge, glm::vec4 color);
+    
+    // Transforms the cube
+    void transformation(glm::mat4 t);
 
-	void transformation(glm::mat4 t);
+    void setTexture(GLuint texID);
 
-	void draw(Shader& shader);
-
-private:
-	glm::vec3 center;
-	float edge;
-	glm::vec3 color;
-	glm::mat4 model;
-	std::vector<Polygon> faces;
+    
+    // Draws all 6 faces
+    void draw(Shader& shader);
 };
-
-#endif // CUBE_H

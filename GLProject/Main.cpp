@@ -3,13 +3,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
-#include "tools/Polygon.h"
-#include "tools/Cube.h"
 #include <learnopengl/shader_m.h>
 #include <learnopengl/camera.h>
-#include <learnopengl/model.h>
+// #include <learnopengl/model.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "tools/Polygon.h"
+#include "tools/Cube.h"
+#include "tools/Cylinder.h"
+#include "tools/Car.h"
 
 using namespace std;
 using namespace glm;
@@ -25,7 +27,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-void processInput(GLFWwindow *window);
+bool inCar = false;
+
+void processInput(GLFWwindow *window, Car &car, Camera &camera, bool &inCar, float deltaTime);
 void mouse_callback(GLFWwindow *window, double xposIn, double yposIn);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -33,28 +37,46 @@ vector<GLuint> loadTextures(vector<string> paths, GLuint wrapOption = GL_REPEAT,
 {
 	vector<GLuint> textures = {};
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapOption);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapOption);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterOption);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterOption);
+	// CRITICAL FIX 1: Tell OpenGL to read byte-by-byte (essential for JPGs with odd widths)
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	for (string path : paths)
 	{
 		unsigned int texture;
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
+
+		// CRITICAL FIX 2: Set parameters AFTER binding the specific texture
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapOption);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapOption);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterOption);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterOption);
+
 		int width, height, nrChannels;
+		// Load data
 		unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
 
 		if (data)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			// CRITICAL FIX 3: Check channels to determine Format (RGB vs RGBA)
+			GLenum format;
+			if (nrChannels == 1)
+				format = GL_RED;
+			else if (nrChannels == 3)
+				format = GL_RGB; // JPG usually falls here
+			else if (nrChannels == 4)
+				format = GL_RGBA; // PNG usually falls here
+
+			// Use 'format' variable instead of hardcoded GL_RGBA
+			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 		else
-			std::cout << "Failed to load texture" << std::endl;
-		stbi_image_free(data);
+		{
+			std::cout << "Failed to load texture: " << path << std::endl;
+		}
 
+		stbi_image_free(data);
 		textures.push_back(texture);
 	}
 
@@ -73,7 +95,7 @@ int main()
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
 	Shader allShader("./shaders/vs/L6.vs", "./shaders/fs/L6.fs");
-	Shader lightSourceShader("./shaders/vs/LightSource2.vs", "./shaders/fs/LightSource2.fs");
+	// Shader lightSourceShader("./shaders/vs/LightSource2.vs", "./shaders/fs/LightSource2.fs");
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -81,71 +103,64 @@ int main()
 
 	stbi_set_flip_vertically_on_load(true);
 
-	vec3 pointLightPositions[] = {
-		vec3(0.0f, 0.0f, 4.0f),
-	};
-	vec3 pointLightColors[] = {
-		vec3(1.0f, 1.0f, 1.0f),
-	};
-
 	vector<string> texturePaths = {};
 	texturePaths.push_back("./textures/window.png");
 	texturePaths.push_back("./textures/white.png");
+	texturePaths.push_back("./textures/wall.jpg");
+	texturePaths.push_back("./textures/floor.jpg");
+	texturePaths.push_back("./textures/building.jpg");
 	vector<GLuint> textures = loadTextures(texturePaths);
 
-	Model ball("./models/ball.glb");
-
-	int numberOfBalls = 3;
-
-	vector<vec3> ballsLocations = {};
-	ballsLocations.push_back(vec3(-2.0f, -1.73f, -1.0f));
-	ballsLocations.push_back(vec3(0.0f, 1.73f, -1.0f));
-	ballsLocations.push_back(vec3(2.0f, -1.73f, -1.0f));
-
-	vector<vec3> vertices = {};
-	vertices.push_back(vec3(-4.0f, -3.46f, 1.0f));
-	vertices.push_back(vec3(4.0f, -3.46f, 1.0f));
-	vertices.push_back(vec3(4.0f, 3.46f, 1.0f));
-	vertices.push_back(vec3(-4.0f, 3.46f, 1.0f));
-
-	vector<vec2> texcoords = {};
-	texcoords.push_back(vec2(0.0f, 0.0f));
-	texcoords.push_back(vec2(1.0f, 0.0f));
-	texcoords.push_back(vec2(1.0f, 1.0f));
-	texcoords.push_back(vec2(0.0f, 1.0f));
-	PolygonWithTransparency pane(vertices, vec4(0.69f, 0.72f, 0.73f, 0.2f));
-	// PolygonWithTexture pane(vertices, texcoords, vec3(1.0f, 1.0f, 1.0f));
-	// pane.setTexture(textures[0]);
-
-	vector<Cube> lightSourceCubes = {};
-	for (int i = 0; i < sizeof(pointLightColors) / sizeof(pointLightColors[0]); i++)
-	{
-		Cube LightSource(pointLightPositions[i], 0.2f, pointLightColors[i]);
-		lightSourceCubes.push_back(LightSource);
-	}
+	// Cube cube(vec3(0.0f, 0.0f, 0.0f), 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	Cylinder cylinder(vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	Car myCar(vec3(0.0f, 0.0f, -5.0f), textures);
 
 	while (!glfwWindowShouldClose(window))
 	{
 		allShader.use();
-		allShader.setVec3("viewPos", camera.Position);
-
-#pragma region Light Settings
-		// Point light 1
-		allShader.setVec3("pointLights[0].position", pointLightPositions[0]);
-		allShader.setVec3("pointLights[0].ambient", pointLightColors[0].x * 0.1f, pointLightColors[0].y * 0.1f, pointLightColors[0].z * 0.1f);
-		allShader.setVec3("pointLights[0].diffuse", pointLightColors[0].x, pointLightColors[0].y, pointLightColors[0].z);
-		allShader.setVec3("pointLights[0].specular", pointLightColors[0].x, pointLightColors[0].y, pointLightColors[0].z);
-		allShader.setFloat("pointLights[0].constant", 1.0f);
-		allShader.setFloat("pointLights[0].linear", 0.0f);
-		allShader.setFloat("pointLights[0].quadratic", 0.0f);
-#pragma endregion
 
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		float time = (float)glfwGetTime();
 
-		processInput(window);
+		processInput(window, myCar, camera, inCar, deltaTime);
+
+		// --- CAMERA SYNC CODE START ---
+
+		if (inCar)
+		{
+
+			// 1. Calculate the offset for the Driver's Head relative to the center of the car
+			// Left (-0.5), Up (1.1 for head height), Forward (0.2 matches seat)
+			glm::vec3 driverHeadOffset = glm::vec3(-0.5f, 1.1f, 0.2f);
+
+			// 2. Create a rotation matrix matching the Car's orientation
+			// We rotate around the Y-axis (0, 1, 0) by the car's angle
+			glm::mat4 carRotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(myCar.rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			// 3. Apply rotation to the offset
+			// This ensures that if the car turns, the driver's head turns with it physically
+			glm::vec3 rotatedOffset = glm::vec3(carRotationMatrix * glm::vec4(driverHeadOffset, 1.0f));
+
+			// 4. Set Camera Position
+			// Final Pos = Car Center + Rotated Offset
+			camera.Position = myCar.position + rotatedOffset;
+
+			// 5. Set Camera Direction (Yaw) to look forward
+			// "90.0f - angle" usually aligns standard Camera Yaw (+X=0) with Car Z-Forward logic
+			camera.Yaw = 90.0f - myCar.rotationAngle;
+
+			// Update camera vectors (essential to apply the Yaw change)
+			camera.updateCameraVectors();
+
+			// --- CAMERA SYNC CODE END ---
+		}
+		else
+		{
+			// --- WALKING MODE: Free Camera ---
+			// No special code needed here, WASD in processInput handles it.
+		}
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -155,54 +170,13 @@ int main()
 		allShader.setMat4("projection", projection);
 
 		mat4 view = mat4(1.0f);
-		view = view = camera.GetViewMatrix();
+		view = camera.GetViewMatrix();
 		allShader.setMat4("view", view);
 
-		glBindTexture(GL_TEXTURE_2D, textures[1]);
-		allShader.setVec4("objectColor", vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		allShader.setMat4("model", translate(mat4(1.0f), ballsLocations[0]));
-		allShader.setVec3("material.ambient", 0.25f, 0.20725f, 0.20725f);
-		allShader.setVec3("material.diffuse", 1.0f, 0.829f, 0.829f);
-		allShader.setVec3("material.specular", 0.296648f, 0.296648f, 0.296648f);
-		allShader.setFloat("material.shininess", 11.26f);
-		ball.Draw(allShader);
+		myCar.draw(allShader);
 
-		allShader.setVec4("objectColor", vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		allShader.setMat4("model", translate(mat4(1.0f), ballsLocations[1]));
-		allShader.setVec3("material.ambient", 0.25f, 0.25f, 0.25f);
-		allShader.setVec3("material.diffuse", 0.4f, 0.4f, 0.4f);
-		allShader.setVec3("material.specular", 0.774597f, 0.774597f, 0.774597f);
-		allShader.setFloat("material.shininess", 76.8f);
-		ball.Draw(allShader);
+		cylinder.draw(allShader);
 
-		allShader.setVec4("objectColor", vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		allShader.setMat4("model", translate(mat4(1.0f), ballsLocations[2]));
-		allShader.setVec3("material.ambient", 0.0f, 0.0f, 0.0f);
-		allShader.setVec3("material.diffuse", 0.5f, 0.5f, 0.0f);
-		allShader.setVec3("material.specular", 0.6f, 0.6f, 0.5f);
-		allShader.setFloat("material.shininess", 32.0f);
-		ball.Draw(allShader);
-
-		lightSourceShader.use();
-		lightSourceShader.setMat4("projection", projection);
-		lightSourceShader.setMat4("view", view);
-
-		glBindTexture(GL_TEXTURE_2D, textures[1]);
-		mat4 model = glm::mat4(1.0f);
-		for (unsigned int i = 0; i < sizeof(pointLightPositions) / sizeof(pointLightPositions[0]); i++)
-		{
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLightPositions[i]);
-			lightSourceShader.setMat4("model", model);
-			lightSourceCubes[i].transformation(model);
-			lightSourceCubes[i].draw(lightSourceShader);
-		}
-
-		allShader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
-		allShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
-		allShader.setVec3("material.specular", 0.8f, 0.8f, 0.8f);
-		allShader.setFloat("material.shininess", 0.0f);
-		pane.draw(allShader);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -211,18 +185,79 @@ int main()
 	return 0;
 }
 
-void processInput(GLFWwindow *window)
+// Pass 'Car &car' so we can modify the real car object
+// Add a global or pass-by-reference variable to track key press to prevent rapid toggling
+bool enterKeyPressed = false;
+
+void processInput(GLFWwindow *window, Car &car, Camera &camera, bool &inCar, float deltaTime)
 {
+	// Exit Game
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+
+	// --- ENTER / EXIT CAR LOGIC ---
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+	{
+		if (!enterKeyPressed) // Only trigger once per press
+		{
+			float dist = glm::distance(camera.Position, car.position);
+			
+			if (inCar)
+			{
+				// EXIT: always allowed if inside
+				inCar = false;
+				// Teleport player slightly to the left of the car so they don't get stuck inside
+				camera.Position = car.position + glm::vec3(-2.0f, 0.0f, 0.0f);
+				camera.Position.y = 3.7f; // Reset height to standing
+			}
+			else if (dist < 3.0f)
+			{
+				// ENTER: Only allowed if close enough (3.0 units)
+				inCar = true;
+			}
+			enterKeyPressed = true;
+		}
+	}
+	else
+	{
+		enterKeyPressed = false; // Reset when key is released
+	}
+
+	// --- MOVEMENT LOGIC ---
+	if (inCar)
+	{
+		// DRIVING MODE (Arrow Keys)
+		// ... (Your existing Car Control Logic) ...
+		float carSpeed = 5.0f * deltaTime;
+		float turnSpeed = 60.0f * deltaTime;
+		float rad = glm::radians(car.rotationAngle);
+		glm::vec3 forwardDir = glm::vec3(sin(rad), 0.0f, cos(rad));
+
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			car.move(forwardDir * carSpeed);
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			car.move(-forwardDir * carSpeed);
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			car.rotate(turnSpeed);
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			car.rotate(-turnSpeed);
+	}
+	else
+	{
+		// WALKING MODE (WASD)
+		// Standard Camera Controls
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			camera.ProcessKeyboard(FORWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			camera.ProcessKeyboard(BACKWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			camera.ProcessKeyboard(LEFT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			camera.ProcessKeyboard(RIGHT, deltaTime);
+
+		// Keep camera at eye level (optional, simple gravity)
+		// camera.Position.y = 1.7f;
+	}
 }
 
 void mouse_callback(GLFWwindow *window, double xposIn, double yposIn)

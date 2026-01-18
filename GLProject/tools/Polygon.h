@@ -1,54 +1,37 @@
 #pragma once
-#ifndef POLYGON_H
-#define POLYGON_H
-
 #include <vector>
 #include <glm/glm.hpp>
-#include <learnopengl/shader_m.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glad/glad.h> // Or your OpenGL loader
+#include <cstddef>     // For offsetof
+#include "learnopengl/shader.h"
+// #include "VertexCust.h"
 
-class Polygon {
-public:
-	Polygon(std::vector<glm::vec3> v, glm::vec3 c);
-	void transformation(glm::mat4 t);
-	void draw(Shader& shader);
-	void deleteBuffers();
-
-protected:
-	glm::vec3 head;
-	std::vector<glm::vec3> vertices;
-	glm::vec3 color;
-	glm::mat4 model;
-	GLuint VAO;
-
-protected:
-	Polygon();
+struct Vertex {
+    glm::vec3 Position;  // 12 bytes
+    glm::vec2 TexCoords; // 8 bytes
+    // Total = 20 bytes (tightly packed usually)
 };
 
-class PolygonWithTexture : public Polygon {
+
+class Polygon
+{
 public:
-	PolygonWithTexture(std::vector<glm::vec3> v, std::vector<glm::vec2> t, glm::vec3 c = glm::vec3(1.0f, 1.0f, 1.0f));
-	void transformation(glm::mat4 t);
-	void setTexture(GLuint& t);
-	void draw(Shader& shader);
-	void deleteBuffers();
+    // 2. Store a vector of 'VertexCust' structs instead of just vec3
+    std::vector<Vertex> vertices;
+    glm::vec3 head;
+    glm::vec4 color;
+    glm::mat4 model;
 
-protected:
-	std::vector<float> vertices;
-	glm::vec3 color;
-	glm::mat4 model;
-	GLuint texture;
-	GLuint VAO;
-	PolygonWithTexture();
+    GLuint VAO, VBO;
+    GLuint textureID; // To store the texture for this polygon
+
+    // Updated Constructor
+    Polygon(std::vector<Vertex> v, glm::vec4 c);
+    Polygon();
+
+    void transformation(glm::mat4 t);
+    void setTexture(GLuint texID); // Helper to assign texture
+    void draw(Shader &shader);
+    void deleteBuffers();
 };
-
-class PolygonWithTransparency : public Polygon {
-public:
-	PolygonWithTransparency(std::vector<glm::vec3> v, glm::vec4 c);
-	void draw(Shader& shader);
-
-protected:
-	glm::vec4 color;
-	PolygonWithTransparency();
-};
-
-#endif // POLYGON_H
