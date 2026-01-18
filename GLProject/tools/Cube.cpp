@@ -84,6 +84,11 @@ void Cube::setTexture(GLuint texID)
     }
 }
 
+glm::mat4 Cube::getMatrixModel()
+{
+    return this->model;
+}
+
 void Cube::draw(Shader &shader)
 {
     // 1. Back Face

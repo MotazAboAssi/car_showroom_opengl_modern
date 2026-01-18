@@ -21,6 +21,8 @@ public:
 
     void setTexture(GLuint texID);
 
+    glm::mat4 getMatrixModel();
+
     
     // Draws all 6 faces
     void draw(Shader& shader);

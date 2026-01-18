@@ -110,10 +110,17 @@ int main()
 	texturePaths.push_back("./textures/floor.jpg");
 	texturePaths.push_back("./textures/building.jpg");
 	vector<GLuint> textures = loadTextures(texturePaths);
+	vector<string> texturePathMainCar = {};
+	texturePathMainCar.push_back("./textures/car/tire_rubber.png");
+	texturePathMainCar.push_back("./textures/car/body_paint.png");
+	texturePathMainCar.push_back("./textures/car/window_glass.png");
+	texturePathMainCar.push_back("./textures/car/grille_metal.png");
+	texturePathMainCar.push_back("./textures/car/cover_wheel.png");
+	vector<GLuint> textureMainCar = loadTextures(texturePathMainCar);
 
 	// Cube cube(vec3(0.0f, 0.0f, 0.0f), 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	Cylinder cylinder(vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	Car myCar(vec3(0.0f, 0.0f, -5.0f), textures);
+	Car myCar(vec3(0.0f, 0.0f, -5.0f), textureMainCar);
 
 	float lastCarAngle = myCar.rotationAngle;
 	while (!glfwWindowShouldClose(window))
@@ -180,7 +187,7 @@ int main()
 
 		myCar.draw(allShader);
 
-		cylinder.draw(allShader);
+		// cylinder.draw(allShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -240,17 +247,15 @@ void processInput(GLFWwindow *window, Car &car, Camera &camera, bool &inCar, flo
 
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		{
-
 			car.move(-forwardDir * carSpeed);
 			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-				car.rotate(-turnSpeed);
-			if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 				car.rotate(turnSpeed);
+			if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				car.rotate(-turnSpeed);
 		}
 		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		{
 			car.move(forwardDir * carSpeed);
-
 			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 				car.rotate(-turnSpeed);
 			if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)

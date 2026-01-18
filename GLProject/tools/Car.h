@@ -7,25 +7,43 @@
 
 class Car {
 public:
-    // The parts of the car
-    Cube* chassis;
-    std::vector<Cylinder*> wheels; // 4 wheels
-    Cube* driverSeat;
-    Cube* passSeat;
-    Cylinder* steeringWheel;
-
+    // State
     glm::vec3 position;
-    float rotationAngle; // Car's rotation around Y axis
-    float wheelAngle;    // Rotation of wheels (rolling)
+    float rotationAngle;
+    float wheelAngle;
 
-    // Constructor: loads the parts
+    // --- HOLLOW CABIN (Walls) ---
+    Cube* floor;
+    Cube* ceiling;
+    Cube* wallLeft;
+    Cube* wallRight;
+    Cube* wallBack; // Rear door
+    Cube* windshield; // Front glass
+
+    // --- EXTERIOR BODY ---
+    Cube* hood;         // Engine block (Solid)
+    Cube* grille;       // Front Grille
+    Cube* bumperFront;
+    Cube* bumperRear;
+    
+    // --- G-CLASS DETAILS ---
+    std::vector<Cube*> fenders; // 4 Wheel arches (The flared part)
+    Cube* runningBoardLeft;     // Side step
+    Cube* runningBoardRight;
+    Cube* turnSignalLeft;       // The iconic box lights on the hood
+    Cube* turnSignalRight;
+    
+    // --- WHEELS ---
+    std::vector<Cylinder*> wheels;
+    Cylinder* spareWheel;
+    Cube* spareWheelCover;
+
+    // Constructor & Destructor
     Car(glm::vec3 startPos, std::vector<GLuint> textures);
     ~Car();
 
-    // Move the car
+    // Functions
     void move(glm::vec3 dir);
     void rotate(float angle);
-
-    // Draw all parts
     void draw(Shader& shader);
 };
