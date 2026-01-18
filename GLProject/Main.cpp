@@ -115,6 +115,7 @@ int main()
 	Cylinder cylinder(vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	Car myCar(vec3(0.0f, 0.0f, -5.0f), textures);
 
+	float lastCarAngle = myCar.rotationAngle;
 	while (!glfwWindowShouldClose(window))
 	{
 		allShader.use();
@@ -130,37 +131,41 @@ int main()
 
 		if (inCar)
 		{
-
-			// 1. Calculate the offset for the Driver's Head relative to the center of the car
-			// Left (-0.5), Up (1.1 for head height), Forward (0.2 matches seat)
+			// --- 1. POSITION LOCK (Stick to the seat) ---
+			// Same as before: Calculate where the driver's head is
 			glm::vec3 driverHeadOffset = glm::vec3(-0.5f, 1.1f, 0.2f);
 
-			// 2. Create a rotation matrix matching the Car's orientation
-			// We rotate around the Y-axis (0, 1, 0) by the car's angle
+			// Create rotation matrix for position offset
 			glm::mat4 carRotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(myCar.rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
-
-			// 3. Apply rotation to the offset
-			// This ensures that if the car turns, the driver's head turns with it physically
 			glm::vec3 rotatedOffset = glm::vec3(carRotationMatrix * glm::vec4(driverHeadOffset, 1.0f));
 
-			// 4. Set Camera Position
-			// Final Pos = Car Center + Rotated Offset
+			// Lock Camera Position to Car
 			camera.Position = myCar.position + rotatedOffset;
 
-			// 5. Set Camera Direction (Yaw) to look forward
-			// "90.0f - angle" usually aligns standard Camera Yaw (+X=0) with Car Z-Forward logic
-			camera.Yaw = 90.0f - myCar.rotationAngle;
+			// --- 2. ROTATION SYNC (The Magic Part) ---
 
-			// Update camera vectors (essential to apply the Yaw change)
+			// Calculate how much the car turned since the last frame
+			float deltaAngle = myCar.rotationAngle - lastCarAngle;
+
+			// Apply that turn to the camera.
+			// This allows the car to turn the camera, BUT the mouse can ALSO turn the camera.
+			// (We subtract deltaAngle because usually Camera Yaw and Object Rotation are inverted in logic)
+			camera.Yaw -= deltaAngle;
+
+			// NOTE: Do NOT set camera.Pitch. Let the mouse control that freely.
+
+			// Manually update vectors so the changes take effect immediately
 			camera.updateCameraVectors();
-
-			// --- CAMERA SYNC CODE END ---
 		}
+
 		else
 		{
 			// --- WALKING MODE: Free Camera ---
 			// No special code needed here, WASD in processInput handles it.
+			// lastCarAngle = myCar.rotationAngle;
 		}
+		// Update the history for the next frame
+		lastCarAngle = myCar.rotationAngle;
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -201,7 +206,7 @@ void processInput(GLFWwindow *window, Car &car, Camera &camera, bool &inCar, flo
 		if (!enterKeyPressed) // Only trigger once per press
 		{
 			float dist = glm::distance(camera.Position, car.position);
-			
+
 			if (inCar)
 			{
 				// EXIT: always allowed if inside
@@ -234,13 +239,23 @@ void processInput(GLFWwindow *window, Car &car, Camera &camera, bool &inCar, flo
 		glm::vec3 forwardDir = glm::vec3(sin(rad), 0.0f, cos(rad));
 
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-			car.move(forwardDir * carSpeed);
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		{
+
 			car.move(-forwardDir * carSpeed);
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-			car.rotate(turnSpeed);
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-			car.rotate(-turnSpeed);
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				car.rotate(-turnSpeed);
+			if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				car.rotate(turnSpeed);
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		{
+			car.move(forwardDir * carSpeed);
+
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				car.rotate(-turnSpeed);
+			if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				car.rotate(turnSpeed);
+		}
 	}
 	else
 	{
