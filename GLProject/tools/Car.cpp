@@ -34,3 +34,11 @@ void Car::draw(Shader &shader) {
     outDesign.draw(shader, carModel, wheelAngle);
     insideDesign.draw(shader, carModel);
 }
+
+void Car::setDoorOpenAngle(float angle) {
+    outDesign.doorOpenAngle = glm::clamp(angle, 0.0f, 1.0f);
+}
+
+float Car::getDoorOpenAngle() {
+    return outDesign.doorOpenAngle;
+}

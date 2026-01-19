@@ -116,8 +116,8 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
 
     // 2. The Iconic Dual Screens (Infotainment + Gauges)
     // Use a special texture that has the speedometer and GPS in one image!
-    glm::mat4 screenMat = glm::translate(carModel, glm::vec3(-0.1f, 1.25f, -1.05f));
-    screenMat = glm::scale(screenMat, glm::vec3(1.3f, 0.4f, 0.02f)); // Wide and thin
+    glm::mat4 screenMat = glm::translate(carModel, glm::vec3(0.0f, 1.25f, -1.05f));
+    screenMat = glm::scale(screenMat, glm::vec3(1.78f, 0.4f, 0.02f)); // Wide and thin
     dualScreen->transformation(screenMat);
     dualScreen->draw(shader);
 
@@ -146,33 +146,37 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     gearHead->draw(shader);
 
     //
-
     // ===========================
     //       PEDAL ASSEMBLY
     // ===========================
-    // Shared parameters for the footwell
-    float pedalY = 1.0f;                      // Slightly above the floor (0.6f)
-    float pedalZ = -0.75f;                      // Deep in the front
-    glm::vec3 pedalScale(0.10f, 0.13f, 0.0f); // Thin pads
+    float pedalY = 0.95f; // Slightly above the floor (0.6f)
+    float pedalZ = -0.9f; // Deep in the front
+    float thickness = 0.003f;
 
     // 1. CLUTCH (Far Left)
+    // Scale: Uniform square
+    glm::vec3 clutchScale(0.12f, 0.08f, thickness);
     glm::mat4 clutchMat = glm::translate(carModel, glm::vec3(-0.7f, pedalY, pedalZ));
-    clutchMat = glm::rotate(clutchMat, glm::radians(-20.0f), glm::vec3(1, 0, 0)); // Slanted
-    clutchMat = glm::scale(clutchMat, pedalScale);
+    clutchMat = glm::rotate(clutchMat, glm::radians(-20.0f), glm::vec3(1, 0, 0));
+    clutchMat = glm::scale(clutchMat, clutchScale);
     clutchPedal->transformation(clutchMat);
     clutchPedal->draw(shader);
 
     // 2. BRAKE (Middle-Left)
-    glm::mat4 brakeMat = glm::translate(carModel, glm::vec3(-0.5f, pedalY, pedalZ));
+    // Scale: Slightly wider than the clutch
+    glm::vec3 brakeScale(0.14f, 0.08f, thickness);
+    glm::mat4 brakeMat = glm::translate(carModel, glm::vec3(-0.45f, pedalY, pedalZ));
     brakeMat = glm::rotate(brakeMat, glm::radians(-20.0f), glm::vec3(1, 0, 0));
-    brakeMat = glm::scale(brakeMat, pedalScale);
+    brakeMat = glm::scale(brakeMat, brakeScale);
     brakePedal->transformation(brakeMat);
     brakePedal->draw(shader);
 
-    // 3. ACCELERATOR (Far Right - often taller and narrower)
-    glm::mat4 accelMat = glm::translate(carModel, glm::vec3(-0.3f, pedalY, pedalZ));
+    // 3. ACCELERATOR (Far Right)
+    // Scale: Tall and Narrow
+    glm::vec3 accelScale(0.08f, 0.16f, thickness);
+    glm::mat4 accelMat = glm::translate(carModel, glm::vec3(-0.2f, pedalY + 0.05f, pedalZ)); // Adjusted Y slightly for height
     accelMat = glm::rotate(accelMat, glm::radians(-20.0f), glm::vec3(1, 0, 0));
-    accelMat = glm::scale(accelMat, glm::vec3(0.08f, 0.22f, 0.02f)); // Taller shape
+    accelMat = glm::scale(accelMat, accelScale);
     accelPedal->transformation(accelMat);
     accelPedal->draw(shader);
 }

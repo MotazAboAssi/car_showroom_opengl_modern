@@ -189,9 +189,9 @@ int main()
 		allShader.setMat4("view", view);
 
 		cylinder.draw(allShader);
+		
+		
 		myCar.draw(allShader);
-
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -281,6 +281,16 @@ void processInput(GLFWwindow *window, Car &car, Camera &camera, bool &inCar, flo
 		// Keep camera at eye level (optional, simple gravity)
 		// camera.Position.y = 1.7f;
 	}
+
+	// --- DOOR ANIMATION LOGIC ---
+// Define a speed for the animation (e.g., 2.0f means it takes 0.5 seconds to open)
+float doorSpeed = 2.0f * deltaTime; 
+if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+    car.setDoorOpenAngle(car.getDoorOpenAngle() + 2.0f * deltaTime);
+
+if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    car.setDoorOpenAngle(car.getDoorOpenAngle() - 2.0f * deltaTime);
+
 }
 
 void mouse_callback(GLFWwindow *window, double xposIn, double yposIn)

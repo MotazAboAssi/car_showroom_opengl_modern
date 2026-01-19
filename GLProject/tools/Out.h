@@ -12,12 +12,17 @@ public:
     // glm::vec3 position;
     // float rotationAngle;
     // float wheelAngle;
+    Cube *wallLeft;
+    Cube *wallRight;
+    Cube *doorFL, *doorFR, *doorRL, *doorRR;
+    Cube *bPillarL, *bPillarR;
+
+        float doorOpenAngle = 0.0f; 
+
 
     // --- HOLLOW CABIN (Walls) ---
     Cube *floor;
     Cube *ceiling;
-    Cube *wallLeft;
-    Cube *wallRight;
     Cube *wallBack;   // Rear door
     Cube *windshield; // Front glass
 
