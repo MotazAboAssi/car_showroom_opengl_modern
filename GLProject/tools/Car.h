@@ -2,8 +2,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Cube.h"
-#include "Cylinder.h"
+#include "Out.h"
+#include "Inside.h" // Include the new header
 
 class Car {
 public:
@@ -12,37 +12,17 @@ public:
     float rotationAngle;
     float wheelAngle;
 
-    // --- HOLLOW CABIN (Walls) ---
-    Cube* floor;
-    Cube* ceiling;
-    Cube* wallLeft;
-    Cube* wallRight;
-    Cube* wallBack; // Rear door
-    Cube* windshield; // Front glass
-
-    // --- EXTERIOR BODY ---
-    Cube* hood;         // Engine block (Solid)
-    Cube* grille;       // Front Grille
-    Cube* bumperFront;
-    Cube* bumperRear;
-    
-    // --- G-CLASS DETAILS ---
-    std::vector<Cube*> fenders; // 4 Wheel arches (The flared part)
-    Cube* runningBoardLeft;     // Side step
-    Cube* runningBoardRight;
-    Cube* turnSignalLeft;       // The iconic box lights on the hood
-    Cube* turnSignalRight;
-    
-    // --- WHEELS ---
-    std::vector<Cylinder*> wheels;
-    Cylinder* spareWheel;
-
     // Constructor & Destructor
-    Car(glm::vec3 startPos, std::vector<GLuint> textures);
+    Car(glm::vec3 startPos, std::vector<GLuint> texturesOut, std::vector<GLuint> texturesInside);
     ~Car();
 
     // Functions
     void move(glm::vec3 dir);
     void rotate(float angle);
-    void draw(Shader& shader);
+    void draw(Shader &shader);
+
+private:
+    // Composition: Car HAS-A Out and HAS-A Inside
+    Out outDesign;
+    Inside insideDesign;
 };

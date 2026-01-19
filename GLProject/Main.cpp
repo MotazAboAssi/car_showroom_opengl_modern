@@ -120,7 +120,8 @@ int main()
 
 	// Cube cube(vec3(0.0f, 0.0f, 0.0f), 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	Cylinder cylinder(vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	Car myCar(vec3(0.0f, 0.0f, -5.0f), textureMainCar);
+	Car myCar(glm::vec3(0.0f, 0.0f, 0.0f), textureMainCar, textureMainCar);
+	Car myCar1(glm::vec3(10.0f, 0.0f, 0.0f), textureMainCar, textureMainCar);
 
 	float lastCarAngle = myCar.rotationAngle;
 	while (!glfwWindowShouldClose(window))
@@ -186,6 +187,7 @@ int main()
 		allShader.setMat4("view", view);
 
 		myCar.draw(allShader);
+		myCar1.draw(allShader);
 
 		// cylinder.draw(allShader);
 
