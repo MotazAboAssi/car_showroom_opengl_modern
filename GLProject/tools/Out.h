@@ -45,8 +45,5 @@ public:
     Out(std::vector<GLuint> textures);
     ~Out();
 
-    // Functions
-    void move(glm::vec3 dir);
-    void rotate(float angle);
     void draw(Shader &shader, glm::mat4 carModel, float wheelAngle);
 };

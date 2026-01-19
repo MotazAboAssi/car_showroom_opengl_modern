@@ -116,12 +116,14 @@ int main()
 	texturePathMainCar.push_back("./textures/car/window_glass.png");
 	texturePathMainCar.push_back("./textures/car/grille_metal.png");
 	texturePathMainCar.push_back("./textures/car/cover_wheel.png");
+	texturePathMainCar.push_back("./textures/car/dashboard_without__steering_wheel .png");
+	texturePathMainCar.push_back("./textures/car/steering wheel.png");
+	texturePathMainCar.push_back("./textures/car/cover steering wheel.png");
 	vector<GLuint> textureMainCar = loadTextures(texturePathMainCar);
 
 	// Cube cube(vec3(0.0f, 0.0f, 0.0f), 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	Cylinder cylinder(vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	Car myCar(glm::vec3(0.0f, 0.0f, 0.0f), textureMainCar, textureMainCar);
-	Car myCar1(glm::vec3(10.0f, 0.0f, 0.0f), textureMainCar, textureMainCar);
 
 	float lastCarAngle = myCar.rotationAngle;
 	while (!glfwWindowShouldClose(window))
@@ -141,7 +143,7 @@ int main()
 		{
 			// --- 1. POSITION LOCK (Stick to the seat) ---
 			// Same as before: Calculate where the driver's head is
-			glm::vec3 driverHeadOffset = glm::vec3(-0.5f, 1.1f, 0.2f);
+			glm::vec3 driverHeadOffset = glm::vec3(-0.5f, 1.8f, 0.0f);
 
 			// Create rotation matrix for position offset
 			glm::mat4 carRotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(myCar.rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -186,10 +188,9 @@ int main()
 		view = camera.GetViewMatrix();
 		allShader.setMat4("view", view);
 
+		cylinder.draw(allShader);
 		myCar.draw(allShader);
-		myCar1.draw(allShader);
 
-		// cylinder.draw(allShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
