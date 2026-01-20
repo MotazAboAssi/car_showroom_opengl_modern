@@ -1,17 +1,14 @@
 #include "Car.h"
 
-// C++ Best Practice: Use an Initializer List for member objects
 Car::Car(glm::vec3 startPos, std::vector<GLuint> texturesOut, std::vector<GLuint> texturesInside)
-    : outDesign(texturesOut),      // Initialize Out object immediately
-      insideDesign(texturesInside) // Initialize Inside object immediately
+    : outDesign(texturesOut),      
+      insideDesign(texturesInside)  
 {
     this->position = startPos;
     this->rotationAngle = 0.0f;
     this->wheelAngle = 0.0f;
 }
 
-// Destructor can be empty. The destructor for 'outDesign' and 'insideDesign' 
-// will be called automatically when the Car is destroyed.
 Car::~Car() {
 }
 

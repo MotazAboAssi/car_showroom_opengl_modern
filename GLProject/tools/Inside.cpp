@@ -88,7 +88,7 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     // Seat scaling (standard size for all)
     glm::vec3 seatScale(0.5f, 0.6f, 0.6f);
 
-    // Front Seats (Z = 0.0)
+    // Front Seats
     glm::mat4 flMat = glm::translate(carModel, glm::vec3(-0.4f, 0.9f, 0.0f));
     flMat = glm::scale(flMat, seatScale);
     seatFL->transformation(flMat);
@@ -99,7 +99,7 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     seatFR->transformation(frMat);
     seatFR->draw(shader);
 
-    // Back Seats (Moved back to Z = 1.2 because cabin is longer)
+    // Back Seats
     glm::mat4 blMat = glm::translate(carModel, glm::vec3(-0.4f, 0.9f, 1.2f));
     blMat = glm::scale(blMat, seatScale);
     seatBL->transformation(blMat);
@@ -115,14 +115,12 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     // ===========================
 
     // 2. The Iconic Dual Screens (Infotainment + Gauges)
-    // Use a special texture that has the speedometer and GPS in one image!
     glm::mat4 screenMat = glm::translate(carModel, glm::vec3(0.0f, 1.25f, -1.05f));
     screenMat = glm::scale(screenMat, glm::vec3(1.78f, 0.4f, 0.02f)); // Wide and thin
     dualScreen->transformation(screenMat);
     dualScreen->draw(shader);
 
     // 2. STEERING WHEEL (Pushed close to the dashboard area)
-    // Positioned at X: -0.45 (Driver side), Y: 1.15 (Height), Z: -0.9 (Deep Front)
     glm::mat4 steerMat = glm::translate(carModel, glm::vec3(-0.45f, 1.3f, -1.0f));
     steerMat = glm::rotate(steerMat, -(float)M_PI / 2, glm::vec3(1.0f, 0.0f, 0.0f));
     steerMat = glm::scale(steerMat, glm::vec3(0.5f)); // Face driver
@@ -130,16 +128,14 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     steeringWheel->draw(shader);
 
     // 3. GEARSHIFT ASSEMBLY
-    // Base position on the center console
     glm::vec3 gearBasePos = glm::vec3(0.0f, 0.7f, -0.3f);
 
     // Draw Shaft
     glm::mat4 shaftMat = glm::translate(carModel, gearBasePos);
-    // No rotation needed if it stands straight up
     gearShaft->transformation(shaftMat);
     gearShaft->draw(shader);
 
-    // Draw Head (Placed at the top of the shaft height)
+    // Draw Head 
     glm::mat4 headMat = glm::translate(carModel, gearBasePos + glm::vec3(0.0f, 0.15f, 0.0f));
     headMat = glm::rotate(headMat, glm::radians(90.0f), glm::vec3(0, 0, 1)); // Lay cylinder horizontally?
     gearHead->transformation(headMat);
@@ -149,12 +145,11 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     // ===========================
     //       PEDAL ASSEMBLY
     // ===========================
-    float pedalY = 0.95f; // Slightly above the floor (0.6f)
-    float pedalZ = -0.9f; // Deep in the front
+    float pedalY = 0.95f; 
+    float pedalZ = -0.9f; 
     float thickness = 0.003f;
 
     // 1. CLUTCH (Far Left)
-    // Scale: Uniform square
     glm::vec3 clutchScale(0.12f, 0.08f, thickness);
     glm::mat4 clutchMat = glm::translate(carModel, glm::vec3(-0.7f, pedalY, pedalZ));
     clutchMat = glm::rotate(clutchMat, glm::radians(-20.0f), glm::vec3(1, 0, 0));
@@ -163,7 +158,6 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     clutchPedal->draw(shader);
 
     // 2. BRAKE (Middle-Left)
-    // Scale: Slightly wider than the clutch
     glm::vec3 brakeScale(0.14f, 0.08f, thickness);
     glm::mat4 brakeMat = glm::translate(carModel, glm::vec3(-0.45f, pedalY, pedalZ));
     brakeMat = glm::rotate(brakeMat, glm::radians(-20.0f), glm::vec3(1, 0, 0));
@@ -172,7 +166,6 @@ void Inside::draw(Shader &shader, glm::mat4 carModel)
     brakePedal->draw(shader);
 
     // 3. ACCELERATOR (Far Right)
-    // Scale: Tall and Narrow
     glm::vec3 accelScale(0.08f, 0.16f, thickness);
     glm::mat4 accelMat = glm::translate(carModel, glm::vec3(-0.2f, pedalY + 0.05f, pedalZ)); // Adjusted Y slightly for height
     accelMat = glm::rotate(accelMat, glm::radians(-20.0f), glm::vec3(1, 0, 0));

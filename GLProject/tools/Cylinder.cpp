@@ -23,7 +23,6 @@ Cylinder::Cylinder(glm::vec3 center, float radius, float height, glm::vec4 color
     float angleStep = 2.0f * PI / (float)segments;
 
     // 1. Generate Vertices for the Rings
-    // We loop i from 0 to segments to ensure the texture wraps fully back to 1.0
     for (int i = 0; i <= segments; i++)
     {
         float angle = i * angleStep;

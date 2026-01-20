@@ -106,26 +106,26 @@ void Out::draw(Shader &shader, glm::mat4 carModel, float wheelAngle)
     float openRad = glm::radians(45.0f * doorOpenAngle);
 
     // 1. Static Body Parts
+    hood->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 0.95f, -1.8f)), glm::vec3(1.7f, 0.8f, 1.5f)));
+    hood->draw(shader);
+    windshield->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 1.7f, -1.4f)), glm::vec3(1.7f, 0.7f, 0.05f)));
+    windshield->draw(shader);
     floor->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 0.6f, 0.5f)), glm::vec3(1.799f, 0.6f, 3.999f)));
     floor->draw(shader);
     ceiling->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 2.05f, 0.5f)), glm::vec3(1.6f, 0.1f, 4.0f)));
     ceiling->draw(shader);
     wallBack->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 1.35f, 2.45f)), glm::vec3(1.6f, 1.3f, 0.1f)));
     wallBack->draw(shader);
-    hood->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 0.95f, -1.8f)), glm::vec3(1.7f, 0.8f, 1.5f)));
-    hood->draw(shader);
     grille->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 0.95f, -2.56f)), glm::vec3(1.5f, 0.6f, 0.05f)));
     grille->draw(shader);
-    windshield->transformation(glm::scale(glm::translate(carModel, glm::vec3(0, 1.7f, -1.4f)), glm::vec3(1.7f, 0.7f, 0.05f)));
-    windshield->draw(shader);
 
-    // 2. B-Pillars (Fixed center bars)
+    // 2. B-Pillars 
     bPillarL->transformation(glm::scale(glm::translate(carModel, glm::vec3(-0.85f, 1.35f, 0.5f)), glm::vec3(0.1f, 1.5f, 0.15f)));
     bPillarL->draw(shader);
     bPillarR->transformation(glm::scale(glm::translate(carModel, glm::vec3(0.85f, 1.35f, 0.5f)), glm::vec3(0.1f, 1.5f, 0.15f)));
     bPillarR->draw(shader);
 
-    // 3. FRONT LEFT DOOR (Pivot at Hinge Z = -1.5)
+    // 3. FRONT LEFT DOOR
     glm::mat4 pFL = glm::rotate(glm::translate(carModel, glm::vec3(-0.85f, 0.6f, -1.45f)), -openRad, glm::vec3(0, 1, 0));
     // Lower
     doorFL->transformation(glm::scale(glm::translate(pFL, glm::vec3(0, 0.4f, 0.95f)), glm::vec3(0.12f, 0.8f, 1.9f)));
@@ -137,7 +137,7 @@ void Out::draw(Shader &shader, glm::mat4 carModel, float wheelAngle)
     mirrorLeft->transformation(glm::scale(glm::translate(pFL, glm::vec3(-0.15f, 0.85f, 0.3f)), glm::vec3(0.2f, 0.15f, 0.1f)));
     mirrorLeft->draw(shader);
 
-    // 4. FRONT RIGHT DOOR (Pivot at Hinge Z = -1.5)
+    // 4. FRONT RIGHT DOOR
     glm::mat4 pFR = glm::rotate(glm::translate(carModel, glm::vec3(0.85f, 0.6f, -1.45f)), openRad, glm::vec3(0, 1, 0));
     doorFR->transformation(glm::scale(glm::translate(pFR, glm::vec3(0, 0.4f, 0.95f)), glm::vec3(0.12f, 0.8f, 1.9f)));
     doorFR->draw(shader);
@@ -146,14 +146,14 @@ void Out::draw(Shader &shader, glm::mat4 carModel, float wheelAngle)
     mirrorRight->transformation(glm::scale(glm::translate(pFR, glm::vec3(0.15f, 0.85f, 0.3f)), glm::vec3(0.2f, 0.15f, 0.1f)));
     mirrorRight->draw(shader);
 
-    // 5. REAR LEFT DOOR (Pivot at B-Pillar Z = 0.5)
+    // 5. REAR LEFT DOOR 
     glm::mat4 pRL = glm::rotate(glm::translate(carModel, glm::vec3(-0.85f, 0.6f, 0.55f)), -openRad * 0.9f, glm::vec3(0, 1, 0));
     doorRL->transformation(glm::scale(glm::translate(pRL, glm::vec3(0, 0.4f, 0.95f)), glm::vec3(0.12f, 0.8f, 1.9f)));
     doorRL->draw(shader);
     doorRL->transformation(glm::scale(glm::translate(pRL, glm::vec3(0, 1.15f, 0.95f)), glm::vec3(0.05f, 0.7f, 1.85f)));
     doorRL->draw(shader);
 
-    // 6. REAR RIGHT DOOR (Pivot at B-Pillar Z = 0.5)
+    // 6. REAR RIGHT DOOR 
     glm::mat4 pRR = glm::rotate(glm::translate(carModel, glm::vec3(0.85f, 0.6f, 0.55f)), openRad * 0.9f, glm::vec3(0, 1, 0));
     doorRR->transformation(glm::scale(glm::translate(pRR, glm::vec3(0, 0.4f, 0.95f)), glm::vec3(0.12f, 0.8f, 1.9f)));
     doorRR->draw(shader);

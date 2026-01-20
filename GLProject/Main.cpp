@@ -122,8 +122,9 @@ int main()
 	vector<GLuint> textureMainCar = loadTextures(texturePathMainCar);
 
 	// Cube cube(vec3(0.0f, 0.0f, 0.0f), 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	Cylinder cylinder(vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	Cylinder cylinder(vec3(0.0f, 0.0f, -10.0f), 1.0f, 1.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	Car myCar(glm::vec3(0.0f, 0.0f, 0.0f), textureMainCar, textureMainCar);
+	Car myCar3(glm::vec3(0.0f, 0.0f, 10.0f), textureMainCar, textureMainCar);
 
 	float lastCarAngle = myCar.rotationAngle;
 	while (!glfwWindowShouldClose(window))
@@ -192,6 +193,7 @@ int main()
 		
 		
 		myCar.draw(allShader);
+		myCar3.draw(allShader);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

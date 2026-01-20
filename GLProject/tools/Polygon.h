@@ -17,21 +17,18 @@ struct Vertex {
 class Polygon
 {
 public:
-    // 2. Store a vector of 'VertexCust' structs instead of just vec3
     std::vector<Vertex> vertices;
     glm::vec3 head;
     glm::vec4 color;
     glm::mat4 model;
 
     GLuint VAO, VBO;
-    GLuint textureID; // To store the texture for this polygon
-
-    // Updated Constructor
+    GLuint textureID; 
     Polygon(std::vector<Vertex> v, glm::vec4 c);
     Polygon();
 
     void transformation(glm::mat4 t);
-    void setTexture(GLuint texID); // Helper to assign texture
+    void setTexture(GLuint texID); 
     void draw(Shader &shader);
     void deleteBuffers();
 };
